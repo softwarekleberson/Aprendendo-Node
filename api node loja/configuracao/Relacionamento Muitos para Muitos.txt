@@ -1,0 +1,71 @@
+Durante a aula usamos o formato embedding para unirmos os dados de autor ao livro correspondente.
+
+Confira abaixo um exemplo simples do mesmo processo, mas usando o formato referencing.
+
+No arquivo Livro.js:
+Ao invés do autorSchema, adicionamos a propriedade autor tendo como valor um ID do tipo ObjectId do MongoDB, fazendo referência à coleção autores.
+
+
+			
+	----------------------------------------------------- Codigo -------------------------------------------------------------------
+
+
+
+const livroSchema = new mongoose.Schema({
+ id: { type: mongoose.Schema.Types.ObjectId },
+ titulo: { type: String, required: true },
+ editora: { type: String },
+ preco: { type: Number },
+ paginas: { type: Number },
+ autor: {type: mongoose.Schema.Types.ObjectId, ref: 'autores', required: true},
+}, { versionKey: false });
+
+
+
+
+ No arquivo livroController.js:
+Quando usamos references o autor não faz mais parte do objeto livro. Assim, cada livro deve ser “populado” com as referências do autor.
+
+Os métodos livro.find({}).populate("autor").exec(); vão utilizar o ID informado no campo autor do livro para buscar a referência desse ID e “popular” a propriedade.
+
+
+
+
+	------------------------------------------------------ Codigo --------------------------------------------------------------------------
+
+
+
+ static async listarLivros (req, res) {
+   try {
+     const listaLivros = await livro.find({}).populate("autor").exec();
+     res.status(200).json(listaLivros);
+   } catch (erro) {
+     res.status(500).json({ message: `${erro.message} - falha na requisição` });
+   }
+ };
+
+
+
+Já o método de cadastrar livro fica como estava anteriormente, pois agora o schema Livro apenas recebeu a propriedade autor com o tipo de dado ID.
+
+
+
+------------------------------------------------------------------------- Codigo -------------------------------------------------------------
+
+
+{
+   "nome": "Machado de Assis",
+   "nacionalidade": "Brasil"
+}
+
+   -------------------------------------------------------------------------------------------------------------------------------------------
+
+{
+   "nome": "Machado de Assis",
+   "nacionalidade": "Brasil",
+    "_id": "64c4303f71627bda06635b6f"
+}
+
+
+
+
